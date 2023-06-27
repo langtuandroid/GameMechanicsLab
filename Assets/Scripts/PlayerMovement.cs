@@ -37,8 +37,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
-        SetRagdoll(false);
         rb = GetComponent<Rigidbody>();
+        SetRagdoll(false);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         cameraRotation = Camera.main.transform;
@@ -118,12 +118,30 @@ public class PlayerMovement : MonoBehaviour
 
     private void BotwMechanics()
     {
-        if(Input.GetKeyDown(KeyCode.Q))
+        //Spawn bomb
+        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll)
         {
             switch(sphereBomb.currentState)
             {
                 case 0:
-                    sphereBomb.Spawn();
+                    sphereBomb.Spawn(true);
+                    break;
+                case 1:
+                    sphereBomb.Throw();
+                    break;
+                case 2:
+                    sphereBomb.Explode();
+                    break;
+            }
+
+        }
+
+        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll)
+        {
+            switch(sphereBomb.currentState)
+            {
+                case 0:
+                    sphereBomb.Spawn(false);
                     break;
                 case 1:
                     sphereBomb.Throw();
@@ -136,13 +154,16 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    IEnumerator ResetRagdoll()
+    IEnumerator DisableRagdoll()
     {
         yield return new WaitForSeconds(3);
         if(IsGrounded())
+        {
+            this.transform.position = Hips.transform.position;
             SetRagdoll(false);
+        }
         else
-            StartCoroutine(ResetRagdoll());
+            StartCoroutine(DisableRagdoll());
     }
 
     public void SetRagdoll(bool areEnable)
@@ -152,23 +173,14 @@ public class PlayerMovement : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             if (collider.gameObject != gameObject)
-                collider.enabled = areEnable;
+              collider.enabled = areEnable;
         }
-
-        if(areEnable)
-        {
-            Hips.parent = null;
-            StartCoroutine(ResetRagdoll());
-        }
-        else
-            Hips.parent = Root.transform;
-
-        
-        isRagdoll = areEnable;
+        rb.useGravity = !areEnable;
         anim.enabled = !areEnable;
+        isRagdoll = areEnable;
         GetComponent<CapsuleCollider>().enabled = !areEnable;
-
-
+        if(areEnable)
+            StartCoroutine(DisableRagdoll());
     }
 
 
@@ -191,12 +203,5 @@ public class PlayerMovement : MonoBehaviour
         {
             BotwMechanics();
         }
-
-        if(isRagdoll)
-        {
-            transform.position = Hips.position;
-        }
-
-        Debug.Log(IsGrounded());
     }
 }

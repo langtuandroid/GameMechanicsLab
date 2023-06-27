@@ -7,9 +7,12 @@ public class Bomb : MonoBehaviour
     public GameObject Player;
     public PhysicMaterial physicMaterial;
     public GameObject explosionZone;
+    public Mesh SphereBomb, SquareBomb;
+    public MeshFilter Mesh;
     private Rigidbody rb;
     private PlayerMovement playerMovement;
-
+    private BoxCollider boxCollider;
+    private SphereCollider sphereCollider;
     private MeshRenderer meshRenderer;
     
     public int currentState = 0;
@@ -34,12 +37,29 @@ public class Bomb : MonoBehaviour
         meshRenderer = GetComponent<MeshRenderer>();
         physicMaterial.staticFriction = friction;
         physicMaterial.dynamicFriction = friction;
+        boxCollider = GetComponent<BoxCollider>();
+        sphereCollider = GetComponent<SphereCollider>();
     }
-    public void Spawn()
+    public void Spawn(bool sphere)
     {
+        // if sphere == true set mesh to sphere, else set mesh to square
+        if(sphere)
+        {
+            Mesh.mesh = SphereBomb;
+            sphereCollider.enabled = true;
+            boxCollider.enabled = false;
+        }
+        else
+        {
+            Mesh.mesh = SquareBomb;
+            sphereCollider.enabled = false;
+            boxCollider.enabled = true;
+        }
+
         gameObject.SetActive(true);
         transform.parent = Player.transform;
         transform.position = Player.transform.position + Player.transform.up * 2.6f;
+        transform.eulerAngles = Vector3.zero;
         currentState = 1;
     }
 
@@ -77,28 +97,21 @@ public class Bomb : MonoBehaviour
         meshRenderer.enabled = false;
         isExploding = true;
         //Cast a sphere to check for any objects within the explosion radius.
-        Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius / 3.5f);
         //Add a force to any objects within the explosion radius.
         foreach (Collider nearbyObject in colliders)
         {
             if (nearbyObject.gameObject == Player)
             {
                 playerMovement.SetRagdoll(true);
-                //add explosion force to the ragdoll
-                Rigidbody[] ragdollRbs = Player.GetComponentsInChildren<Rigidbody>();
-                foreach (Rigidbody rb in ragdollRbs)
-                {
-                    rb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
-                }
-
-                return;
             }
             
 
             Rigidbody colRb = nearbyObject.GetComponent<Rigidbody>();
-            if (colRb != null && colRb != rb)
+            if (colRb != null && colRb != rb && colRb.gameObject != Player)
             {
-                colRb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
+                Debug.Log(colRb.name);
+                //colRb.AddExplosionForce(explosionForce, transform.position - nearbyObject.transform.position, explosionRadius);
             }
         }
     }
@@ -112,5 +125,10 @@ public class Bomb : MonoBehaviour
             other.GetComponent<Rigidbody>().AddExplosionForce(explosionForce, transform.position, explosionRadius);
         }
 
+    }
+
+    private void OnDrawGizmos() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, explosionRadius / 4);
     }
 }
