@@ -123,6 +123,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &13298606 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2686890238580842732, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+  m_PrefabInstance: {fileID: 238669884}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &91677696 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1070059845246796249, guid: f79ad9e1092c6f6488c7da22de548737, type: 3}
@@ -152,7 +157,7 @@ MonoBehaviour:
   throwForce: 18
   throwHeight: 21
   explosionRadius: 15
-  explosionForce: 10000
+  explosionForce: 1000
   isExploding: 0
   friction: 1
   maxVel: 1.5
@@ -181,6 +186,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 52131378378733594, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 980473053464103318, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2686890238580842728, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
       propertyPath: m_RootOrder
       value: 3
@@ -241,9 +254,45 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: ccc50d631d14df84a982c4f4acd00013, type: 2}
+    - target: {fileID: 2691171370977665215, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3325917618312821618, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3524811768358634365, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3533145501235513671, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3865832967340345512, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4702484795214631758, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
       propertyPath: m_Radius
       value: 0.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 5366878467266684747, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5924808619548106910, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7838992755729553963, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8900111412841780269, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
@@ -617,6 +666,11 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2686890238580842728, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
   m_PrefabInstance: {fileID: 238669884}
   m_PrefabAsset: {fileID: 0}
+--- !u!95 &787525959 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 2686890238588325744, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+  m_PrefabInstance: {fileID: 238669884}
+  m_PrefabAsset: {fileID: 0}
 --- !u!136 &787525960
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -661,9 +715,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walk: {fileID: 9100000, guid: 75d3a58b3d7879f41926561701407a48, type: 2}
   idle: {fileID: 9100000, guid: a8555c0cff30527479e32562cef9141f, type: 2}
+  anim: {fileID: 787525959}
+  Hips: {fileID: 1013439173}
+  Root: {fileID: 13298606}
   currentSpeed: 0
   moveSpeed: 5
   runSpeed: 8
+  isRagdoll: 0
   jumpHeight: 7
   World: 0
   sphereBomb: {fileID: 91677701}
@@ -863,7 +921,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 955152600}
-  m_LocalRotation: {x: 0.09252102, y: -0.000000017659858, z: 0.0000000016409465, w: 0.99571073}
+  m_LocalRotation: {x: 0.09252102, y: 0.000000017659856, z: -0.0000000016409463, w: 0.99571073}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -941,7 +999,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 955640832}
-  m_LocalRotation: {x: 0.047631986, y: -0.0000000021483564, z: 1.0244677e-10, w: 0.99886495}
+  m_LocalRotation: {x: 0.047631986, y: 0.0000000021483564, z: -1.0244677e-10, w: 0.99886495}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1027,7 +1085,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.04763199, y: -0.0000000021483566, z: 1.0244677e-10, w: 0.99886495}
+  m_LocalRotation: {x: 0.04763199, y: 0.0000000021483566, z: -1.0244677e-10, w: 0.99886495}
   m_LocalPosition: {x: 0, y: 2.5440001, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1152,6 +1210,11 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 987195368}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &1013439173 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2686890238580842704, guid: 7856c197eb4c77840878eba92e1c48b7, type: 3}
+  m_PrefabInstance: {fileID: 238669884}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1208137214
 GameObject:
   m_ObjectHideFlags: 0
@@ -1297,9 +1360,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   walk: {fileID: 9100000, guid: 75d3a58b3d7879f41926561701407a48, type: 2}
   idle: {fileID: 9100000, guid: a8555c0cff30527479e32562cef9141f, type: 2}
+  anim: {fileID: 0}
+  Hips: {fileID: 0}
+  Root: {fileID: 0}
   currentSpeed: 0
   moveSpeed: 5
   runSpeed: 8
+  isRagdoll: 0
   jumpHeight: 7
   World: 0
   sphereBomb: {fileID: 91677701}
