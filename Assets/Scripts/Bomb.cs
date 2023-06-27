@@ -9,6 +9,8 @@ public class Bomb : MonoBehaviour
     public GameObject explosionZone;
     public Mesh SphereBomb, SquareBomb;
     public MeshFilter Mesh;
+    
+    public Transform BombPos;
     private Rigidbody rb;
     private PlayerMovement playerMovement;
     private BoxCollider boxCollider;
@@ -42,8 +44,8 @@ public class Bomb : MonoBehaviour
     }
     public void Spawn(bool sphere)
     {
-        // if sphere == true set mesh to sphere, else set mesh to square
-        if(sphere)
+        // Set the mesh and collider based on the bomb type.
+        if (sphere)
         {
             Mesh.mesh = SphereBomb;
             sphereCollider.enabled = true;
@@ -56,9 +58,10 @@ public class Bomb : MonoBehaviour
             boxCollider.enabled = true;
         }
 
+        // Activate the bomb and position it above the player.
         gameObject.SetActive(true);
-        transform.parent = Player.transform;
-        transform.position = Player.transform.position + Player.transform.up * 2.6f;
+        transform.parent = BombPos;
+        transform.position = BombPos.position;
         transform.eulerAngles = Vector3.zero;
         currentState = 1;
     }
@@ -96,8 +99,10 @@ public class Bomb : MonoBehaviour
     {
         meshRenderer.enabled = false;
         isExploding = true;
+
         //Cast a sphere to check for any objects within the explosion radius.
         Collider[] colliders = Physics.OverlapSphere(transform.position, explosionRadius / 3.5f);
+
         //Add a force to any objects within the explosion radius.
         foreach (Collider nearbyObject in colliders)
         {
@@ -111,7 +116,13 @@ public class Bomb : MonoBehaviour
             if (colRb != null && colRb != rb && colRb.gameObject != Player)
             {
                 Debug.Log(colRb.name);
-                //colRb.AddExplosionForce(explosionForce, transform.position - nearbyObject.transform.position, explosionRadius);
+                colRb.AddExplosionForce(explosionForce, transform.position, explosionRadius);
+                //If the object has a WorldObject script, call the TakeDamage function.
+                WorldObject worldObject = nearbyObject.GetComponent<WorldObject>();
+                if (worldObject != null)
+                {
+                    worldObject.TakeDamage(5, this.gameObject);
+                }
             }
         }
     }

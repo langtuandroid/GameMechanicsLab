@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     public bool isRagdoll = false;
     private float turnSmoothTime = 0.1f;
     private float rotationSpeed;
+    private bool isHolding = false;
 
     [Header("Jump")]
     public float jumpHeight;
@@ -75,6 +76,9 @@ public class PlayerMovement : MonoBehaviour
             // Set walk animator controller
             anim.runtimeAnimatorController = walk;
 
+            if(isHolding)
+                anim.Play("Bomb", 1, 50);
+
             // Gradually increase the player's speed
             currentSpeed += Time.deltaTime * 3;
 
@@ -118,16 +122,20 @@ public class PlayerMovement : MonoBehaviour
 
     private void BotwMechanics()
     {
-        //Spawn bomb
-        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll)
+        //Spawn sphere bomb
+        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll && !anim.GetBool("isRunning") && IsGrounded())
         {
             switch(sphereBomb.currentState)
             {
                 case 0:
                     sphereBomb.Spawn(true);
+                    anim.SetBool("isHolding", true);
+                    isHolding = true;
                     break;
                 case 1:
                     sphereBomb.Throw();
+                    anim.SetBool("isHolding", false);
+                    isHolding = false;
                     break;
                 case 2:
                     sphereBomb.Explode();
@@ -135,16 +143,20 @@ public class PlayerMovement : MonoBehaviour
             }
 
         }
-
-        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll)
+        //spawn square bomb
+        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll && !anim.GetBool("isRunning") && IsGrounded())
         {
             switch(sphereBomb.currentState)
             {
                 case 0:
                     sphereBomb.Spawn(false);
+                    anim.SetBool("isHolding", true);
+                    isHolding = true;
                     break;
                 case 1:
                     sphereBomb.Throw();
+                    anim.SetBool("isHolding", false);
+                    isHolding = false;
                     break;
                 case 2:
                     sphereBomb.Explode();
@@ -156,12 +168,15 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator DisableRagdoll()
     {
+        // Wait for the character to be grounded
         yield return new WaitForSeconds(3);
         if(IsGrounded())
         {
+            // Move the character to the Hips's position
             this.transform.position = Hips.transform.position;
             SetRagdoll(false);
         }
+        // Keep trying to disable the ragdoll
         else
             StartCoroutine(DisableRagdoll());
     }
@@ -175,10 +190,15 @@ public class PlayerMovement : MonoBehaviour
             if (collider.gameObject != gameObject)
               collider.enabled = areEnable;
         }
+        //Enable or disable the gravity
         rb.useGravity = !areEnable;
+        //Enable or disable the animation
         anim.enabled = !areEnable;
+        //Set the ragdoll state
         isRagdoll = areEnable;
+        //Disable the capsule collider of the player
         GetComponent<CapsuleCollider>().enabled = !areEnable;
+        //Start the coroutine to disable the ragdoll
         if(areEnable)
             StartCoroutine(DisableRagdoll());
     }
@@ -197,6 +217,8 @@ public class PlayerMovement : MonoBehaviour
         {
             // Set idle animator controller
             anim.runtimeAnimatorController = idle;
+            if(isHolding)
+                anim.Play("Bomb", 1, 50);
         }
 
         if(World == CurrentWorld.botw)
