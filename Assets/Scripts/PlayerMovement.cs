@@ -23,6 +23,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")]
     public float jumpHeight;
+    public float jumpDelay;
 
 
     [Header("World")]
@@ -98,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
         else if (IsGrounded())
         {
             currentSpeed = 0;
-            rb.velocity = Vector3.zero;
+            rb.velocity = new Vector3(0, rb.velocity.y, 0);
         }
 
     }
@@ -109,14 +110,24 @@ public class PlayerMovement : MonoBehaviour
         return Physics.Raycast(transform.position, Vector3.down, 1.1f);
     }
 
-
+    //Jump delay function
+    private void JumpDelay()
+    {
+        if (jumpDelay > 0 && IsGrounded()) 
+            jumpDelay -= Time.deltaTime;
+    }
 
     private void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
+        JumpDelay();
+        JumpStop();
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && jumpDelay <= 0 && !isRagdoll)
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.z);
-            anim.Play("Jump");
+            anim.Play("Jump", 0);
+            anim.Play("Jump", 1);
+
+            jumpDelay = 1f;
         }
     }
 
@@ -203,6 +214,22 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(DisableRagdoll());
     }
 
+    private void JumpStop()
+    {
+        if(rb.velocity == Vector3.zero && anim.runtimeAnimatorController != idle)
+        {
+            // Set idle animator controller
+            anim.runtimeAnimatorController = idle;
+            if(isHolding)
+                anim.Play("Bomb", 1, 50);
+        }
+        //Reset the animation if the player is jumping and is grounded
+        if (anim.GetCurrentAnimatorStateInfo(0).IsName("Jump") && IsGrounded())
+        {
+            anim.runtimeAnimatorController = anim.runtimeAnimatorController;
+        }
+    }
+
 
     // Update is called once per frame
     void Update()
@@ -213,13 +240,6 @@ public class PlayerMovement : MonoBehaviour
 
         anim.SetBool("isGrounded", IsGrounded());
 
-        if(rb.velocity == Vector3.zero)
-        {
-            // Set idle animator controller
-            anim.runtimeAnimatorController = idle;
-            if(isHolding)
-                anim.Play("Bomb", 1, 50);
-        }
 
         if(World == CurrentWorld.botw)
         {
