@@ -19,7 +19,8 @@ public class PlayerMovement : MonoBehaviour
     public bool isRagdoll = false;
     private float turnSmoothTime = 0.1f;
     private float rotationSpeed;
-    private bool isHolding = false;
+    private bool isHoldingBomb = false;
+    private bool isHoldingArm = false;
 
     [Header("Jump")]
     public float jumpHeight;
@@ -74,12 +75,6 @@ public class PlayerMovement : MonoBehaviour
         Vector3 direction = new Vector3(x, 0, z).normalized;
         if (direction.magnitude >= 0.1f && IsGrounded() && !isRagdoll)
         {
-            // Set walk animator controller
-            anim.runtimeAnimatorController = walk;
-
-            if(isHolding)
-                anim.Play("Bomb", 1, 50);
-
             // Gradually increase the player's speed
             currentSpeed += Time.deltaTime * 3;
 
@@ -120,7 +115,6 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         JumpDelay();
-        JumpStop();
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && jumpDelay <= 0 && !isRagdoll)
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.z);
@@ -140,13 +134,13 @@ public class PlayerMovement : MonoBehaviour
             {
                 case 0:
                     sphereBomb.Spawn(true);
-                    anim.SetBool("isHolding", true);
-                    isHolding = true;
+                    anim.SetBool("isHoldingBomb", true);
+                    isHoldingBomb = true;
                     break;
                 case 1:
                     sphereBomb.Throw();
-                    anim.SetBool("isHolding", false);
-                    isHolding = false;
+                    anim.SetBool("isHoldingBomb", false);
+                    isHoldingBomb = false;
                     break;
                 case 2:
                     sphereBomb.Explode();
@@ -161,19 +155,26 @@ public class PlayerMovement : MonoBehaviour
             {
                 case 0:
                     sphereBomb.Spawn(false);
-                    anim.SetBool("isHolding", true);
-                    isHolding = true;
+                    anim.SetBool("isHoldingBomb", true);
+                    isHoldingBomb = true;
                     break;
                 case 1:
                     sphereBomb.Throw();
-                    anim.SetBool("isHolding", false);
-                    isHolding = false;
+                    anim.SetBool("isHoldingBomb", false);
+                    isHoldingBomb = false;
                     break;
                 case 2:
                     sphereBomb.Explode();
                     break;
             }
 
+        }
+
+        //Magnet
+        if(Input.GetKeyDown(KeyCode.R))
+        {
+            isHoldingArm = !isHoldingArm;
+            anim.SetBool("isHoldingArm", isHoldingArm);
         }
     }
 
@@ -214,14 +215,41 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(DisableRagdoll());
     }
 
-    private void JumpStop()
+    private void AnimationUpdater()
     {
         if(rb.velocity == Vector3.zero && anim.runtimeAnimatorController != idle)
         {
-            // Set idle animator controller
-            anim.runtimeAnimatorController = idle;
-            if(isHolding)
+            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
+            {
+                anim.runtimeAnimatorController = idle;
+                anim.SetBool("isHoldingBomb", true);
                 anim.Play("Bomb", 1, 50);
+            }
+            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
+            {
+                anim.runtimeAnimatorController = idle;
+                anim.SetBool("isHoldingArm", true);
+                anim.Play("HoldingArm", 1, 50);
+            }
+            else
+                anim.runtimeAnimatorController = idle;
+        }
+        else if(rb.velocity.magnitude > 0.1f && anim.runtimeAnimatorController != walk)
+        {  
+            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
+            {
+                anim.runtimeAnimatorController = walk;
+                anim.SetBool("isHoldingBomb", true);
+                anim.Play("Bomb", 1, 50);
+            }
+            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
+            {
+                anim.runtimeAnimatorController = walk;
+                anim.SetBool("isHoldingArm", true);
+                anim.Play("HoldingArm", 1, 50);
+            }
+            else
+                anim.runtimeAnimatorController = walk;
         }
         //Reset the animation if the player is jumping and is grounded
         if (anim.GetCurrentAnimatorStateInfo(0).IsName("Jump") && IsGrounded())
@@ -234,6 +262,7 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        AnimationUpdater();
         ChangeVelocity();
         Movement();
         Jump();
