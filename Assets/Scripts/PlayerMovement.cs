@@ -1,13 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("References")]
     public RuntimeAnimatorController walk;
     public RuntimeAnimatorController idle;
-    private Rigidbody rb;
+    public Rigidbody rb;
     public Animator anim;
     private Transform cameraRotation;
     public Transform Hips, Root;
@@ -17,10 +18,9 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed;
     public float runSpeed;
     public bool isRagdoll = false;
+    public bool canRotate = true;
     private float turnSmoothTime = 0.1f;
     private float rotationSpeed;
-    private bool isHoldingBomb = false;
-    private bool isHoldingArm = false;
 
     [Header("Jump")]
     public float jumpHeight;
@@ -28,15 +28,12 @@ public class PlayerMovement : MonoBehaviour
 
 
     [Header("World")]
-
     public CurrentWorld World;
+
     public enum CurrentWorld
     {
         botw
     }
-
-    [Header("Botw")]
-    public Bomb sphereBomb;
 
     void Start()
     {
@@ -83,7 +80,8 @@ public class PlayerMovement : MonoBehaviour
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref rotationSpeed, turnSmoothTime);
 
             // Rotate the player
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            if(canRotate)
+                transform.rotation = Quaternion.Euler(0f, angle, 0f);
 
             // Calculate the direction the player should be moving
             Vector3 moveDir = Quaternion.Euler(0f, cameraRotation.eulerAngles.y, 0f) * direction;
@@ -99,7 +97,7 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
-    private bool IsGrounded()
+    public bool IsGrounded()
     {
         //Check if player is grounded
         return Physics.Raycast(transform.position, Vector3.down, 1.1f);
@@ -118,6 +116,7 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && jumpDelay <= 0 && !isRagdoll)
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.z);
+            Debug.Log(anim.runtimeAnimatorController.name);
             anim.Play("Jump", 0);
             anim.Play("Jump", 1);
 
@@ -125,58 +124,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void BotwMechanics()
-    {
-        //Spawn sphere bomb
-        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll && IsGrounded())
-        {
-            switch(sphereBomb.currentState)
-            {
-                case 0:
-                    sphereBomb.Spawn(true);
-                    anim.SetBool("isHoldingBomb", true);
-                    isHoldingBomb = true;
-                    break;
-                case 1:
-                    sphereBomb.Throw();
-                    anim.SetBool("isHoldingBomb", false);
-                    isHoldingBomb = false;
-                    break;
-                case 2:
-                    sphereBomb.Explode();
-                    break;
-            }
 
-        }
-        //spawn square bomb
-        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll && IsGrounded())
-        {
-            switch(sphereBomb.currentState)
-            {
-                case 0:
-                    sphereBomb.Spawn(false);
-                    anim.SetBool("isHoldingBomb", true);
-                    isHoldingBomb = true;
-                    break;
-                case 1:
-                    sphereBomb.Throw();
-                    anim.SetBool("isHoldingBomb", false);
-                    isHoldingBomb = false;
-                    break;
-                case 2:
-                    sphereBomb.Explode();
-                    break;
-            }
-
-        }
-
-        //Magnet
-        if(Input.GetKeyDown(KeyCode.R))
-        {
-            isHoldingArm = !isHoldingArm;
-            anim.SetBool("isHoldingArm", isHoldingArm);
-        }
-    }
 
     IEnumerator DisableRagdoll()
     {
@@ -215,62 +163,13 @@ public class PlayerMovement : MonoBehaviour
             StartCoroutine(DisableRagdoll());
     }
 
-    private void AnimationUpdater()
-    {
-        // If player is not moving, switch to idle animation
-        if(rb.velocity == Vector3.zero && anim.runtimeAnimatorController != idle)
-        {
-            // If player is holding a bomb, play idle animation for holding bomb
-            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
-            {
-                anim.runtimeAnimatorController = idle;
-                anim.SetBool("isHoldingBomb", true);
-                anim.Play("Bomb", 1, 50);
-            }
-            // If player is holding a bomb arm, play idle animation for holding bomb arm
-            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
-            {
-                anim.runtimeAnimatorController = idle;
-                anim.SetBool("isHoldingArm", true);
-                anim.Play("HoldingArm", 1, 50);
-            }
-            // Otherwise, play normal idle animation
-            else
-                anim.runtimeAnimatorController = idle;
-        }
-        // If player is moving, switch to walking animation
-        else if(rb.velocity.magnitude > 0.1f && anim.runtimeAnimatorController != walk)
-        {  
-            // If player is holding a bomb, play walking animation for holding bomb
-            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
-            {
-                anim.runtimeAnimatorController = walk;
-                anim.SetBool("isHoldingBomb", true);
-                anim.Play("Bomb", 1, 50);
-            }
-            // If player is holding a bomb arm, play walking animation for holding bomb arm
-            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
-            {
-                anim.runtimeAnimatorController = walk;
-                anim.SetBool("isHoldingArm", true);
-                anim.Play("HoldingArm", 1, 50);
-            }
-            // Otherwise, play normal walking animation
-            else
-                anim.runtimeAnimatorController = walk;
-        }
-        //Reset the animation if the player is jumping and is grounded
-        if (anim.GetCurrentAnimatorStateInfo(0).IsName("Jump") && IsGrounded())
-        {
-            anim.runtimeAnimatorController = anim.runtimeAnimatorController;
-        }
-    }
+
 
 
     // Update is called once per frame
     void Update()
     {
-        AnimationUpdater();
+
         ChangeVelocity();
         Movement();
         Jump();
@@ -278,9 +177,6 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("isGrounded", IsGrounded());
 
 
-        if(World == CurrentWorld.botw)
-        {
-            BotwMechanics();
-        }
     }
 }
+
