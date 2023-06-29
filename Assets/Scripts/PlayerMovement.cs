@@ -128,7 +128,7 @@ public class PlayerMovement : MonoBehaviour
     private void BotwMechanics()
     {
         //Spawn sphere bomb
-        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll && !anim.GetBool("isRunning") && IsGrounded())
+        if(Input.GetKeyDown(KeyCode.Q) && !isRagdoll && IsGrounded())
         {
             switch(sphereBomb.currentState)
             {
@@ -149,7 +149,7 @@ public class PlayerMovement : MonoBehaviour
 
         }
         //spawn square bomb
-        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll && !anim.GetBool("isRunning") && IsGrounded())
+        if(Input.GetKeyDown(KeyCode.E) && !isRagdoll && IsGrounded())
         {
             switch(sphereBomb.currentState)
             {
@@ -217,37 +217,45 @@ public class PlayerMovement : MonoBehaviour
 
     private void AnimationUpdater()
     {
+        // If player is not moving, switch to idle animation
         if(rb.velocity == Vector3.zero && anim.runtimeAnimatorController != idle)
         {
+            // If player is holding a bomb, play idle animation for holding bomb
             if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
             {
                 anim.runtimeAnimatorController = idle;
                 anim.SetBool("isHoldingBomb", true);
                 anim.Play("Bomb", 1, 50);
             }
+            // If player is holding a bomb arm, play idle animation for holding bomb arm
             else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
             {
                 anim.runtimeAnimatorController = idle;
                 anim.SetBool("isHoldingArm", true);
                 anim.Play("HoldingArm", 1, 50);
             }
+            // Otherwise, play normal idle animation
             else
                 anim.runtimeAnimatorController = idle;
         }
+        // If player is moving, switch to walking animation
         else if(rb.velocity.magnitude > 0.1f && anim.runtimeAnimatorController != walk)
         {  
+            // If player is holding a bomb, play walking animation for holding bomb
             if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
             {
                 anim.runtimeAnimatorController = walk;
                 anim.SetBool("isHoldingBomb", true);
                 anim.Play("Bomb", 1, 50);
             }
+            // If player is holding a bomb arm, play walking animation for holding bomb arm
             else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
             {
                 anim.runtimeAnimatorController = walk;
                 anim.SetBool("isHoldingArm", true);
                 anim.Play("HoldingArm", 1, 50);
             }
+            // Otherwise, play normal walking animation
             else
                 anim.runtimeAnimatorController = walk;
         }

@@ -48,7 +48,7 @@ public class Bomb : MonoBehaviour
         if (sphere)
         {
             Mesh.mesh = SphereBomb;
-            sphereCollider.enabled = true;
+            sphereCollider.enabled = false;
             boxCollider.enabled = false;
         }
         else
@@ -68,6 +68,7 @@ public class Bomb : MonoBehaviour
 
     public void Throw()
     {
+        sphereCollider.enabled = true;
         transform.parent = null;
         rb.constraints = RigidbodyConstraints.None;
         rb.AddForce(((Player.transform.forward  * throwForce) + (Player.transform.up * throwHeight)) * currentVel, ForceMode.Impulse);
