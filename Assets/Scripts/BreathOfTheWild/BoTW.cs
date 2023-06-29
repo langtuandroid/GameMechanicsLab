@@ -9,7 +9,7 @@ public class BoTW : MonoBehaviour
     public GameObject Target;
     public CinemachineFreeLook cinemachine;
     public GameObject Aim;
-    public Transform Head;
+    public Transform Hand;
 
     public Bomb bomb;
     public GameObject movingObj;
@@ -21,17 +21,23 @@ public class BoTW : MonoBehaviour
     private Rigidbody rb;
     private Animator anim;
     private Vector2 previousMousePosition;
-    private int magnetState = 0;
+    public int magnetState = 0;
 
     public float minDistance,maxDistance = 10f;
     private PlayerMovement playerMovement;
 
-    public float magnetDistance;   
 
+    public float magnetDistance;   
     private int screenHeight, screenWidth;
+
+    private float iDelay, kDelay;
+
+    private LineRenderer line;
+
     // Start is called before the first frame update
     void Start()
     {
+        line = GetComponent<LineRenderer>();
         screenHeight = Screen.height;
         screenWidth = Screen.width;
         rb = GetComponent<Rigidbody>();
@@ -150,14 +156,16 @@ public class BoTW : MonoBehaviour
                     break;
                 case 1:
                     Vector3 centerOfScreen = new Vector3(screenWidth / 2f, screenHeight / 2f, 0f);
-
                     Ray ray = Camera.main.ScreenPointToRay(centerOfScreen);
                     RaycastHit hit;
 
                     if (Physics.Raycast(ray, out hit))
                     {           
-                        if(hit.collider.gameObject.GetComponent<WorldObject>()) 
+                        if(hit.collider.gameObject.GetComponent<WorldObject>() && Vector3.Distance(transform.position, hit.collider.transform.position) > minDistance) 
                         {
+                            Aim.SetActive(false);
+                            Debug.Log(Vector3.Distance(transform.position, hit.collider.transform.position));
+                            line.enabled = true;
                             movingObj = hit.collider.gameObject;
                             playerMovement.canRotate = false;
                             movingObj.GetComponent<Rigidbody>().useGravity = false;
@@ -168,15 +176,26 @@ public class BoTW : MonoBehaviour
                     }
                     break;
                 case 2:
+                    line.enabled = false;
                     movingObj.GetComponent<Rigidbody>().useGravity = true;
                     movingObj.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
                     movingObj = null;
                     playerMovement.canRotate = true;
                     anim.SetBool("isHoldingArm", false);
                     isHoldingArm = false;
+                    cinemachine.LookAt = transform;
                     magnetState = 0;
                     break;
             }
+        }
+    }
+
+    private void FixedUpdate() 
+    {
+        if(movingObj != null)
+        {
+            line.SetPosition(0, Hand.transform.position);
+            line.SetPosition(1, movingObj.transform.position);
         }
     }
 
@@ -184,10 +203,11 @@ public class BoTW : MonoBehaviour
     {
         if(movingObj != null)
         {
+
             Vector3 lookPos = new Vector3(movingObj.transform.position.x, transform.position.y, movingObj.transform.position.z);
             transform.LookAt(lookPos);
             
-            Vector3 dir= Camera.main.ScreenToWorldPoint(new Vector3(screenWidth / 2f, screenHeight / 2f, 10f)) - movingObj.transform.position;
+            Vector3 dir = Camera.main.ScreenToWorldPoint(new Vector3(screenWidth / 2f, screenHeight / 2f, 10f)) - movingObj.transform.position;
 
             Vector3 perpendicularDir = dir - Vector3.Dot(dir, transform.forward) * transform.forward;
 
@@ -196,30 +216,38 @@ public class BoTW : MonoBehaviour
                 perpendicularDir = Vector3.zero;
             }
 
-            movingObj.GetComponent<Rigidbody>().velocity = perpendicularDir.normalized * magnetSpeed;
+            Rigidbody movingObjRb = movingObj.GetComponent<Rigidbody>();
+
+            movingObjRb.velocity = perpendicularDir.normalized * magnetSpeed;
+
+            float distance = Vector3.Distance(movingObj.transform.position, transform.position);
+            float horizontalDistance = Vector2.Distance(new Vector2(transform.position.x, transform.position.z), new Vector2(movingObj.transform.position.x, movingObj.transform.position.z));
 
             //limit the minimum and maximum distance the object can be from the player
-            if(Vector3.Distance(movingObj.transform.position, transform.position) > maxDistance)
+            if(distance > maxDistance)
             {
-                movingObj.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                movingObjRb.velocity = Vector3.zero;
                 movingObj.transform.position = transform.position + (movingObj.transform.position - transform.position).normalized * maxDistance;
             }
-            else if(Vector3.Distance(movingObj.transform.position, transform.position) < minDistance)
+            else if (distance < minDistance)
             {
-                movingObj.GetComponent<Rigidbody>().velocity = Vector3.zero;
+                movingObjRb.velocity = Vector3.zero;
                 movingObj.transform.position = transform.position + (movingObj.transform.position - transform.position).normalized * minDistance;
             }
 
             //move the object towards the player if the key "I" is held
-            if(Input.GetKey(KeyCode.I))
+            if(Input.GetKey(KeyCode.I) && !Input.GetKey(KeyCode.K) && distance < maxDistance)
             {
-                movingObj.GetComponent<Rigidbody>().velocity = (new Vector3(-dir.x, 0, -dir.z).normalized + perpendicularDir.normalized) * magnetSpeed;
+                movingObjRb.velocity = (new Vector3(-dir.x, 0, -dir.z).normalized + perpendicularDir.normalized) * magnetSpeed;
             }
-            else if(Input.GetKey(KeyCode.K))
+            else if(Input.GetKey(KeyCode.K) && !Input.GetKey(KeyCode.I) && horizontalDistance > minDistance)
             {
-                movingObj.GetComponent<Rigidbody>().velocity = (new Vector3(dir.x, 0, dir.z).normalized + perpendicularDir.normalized) * magnetSpeed;
+                movingObjRb.velocity = (new Vector3(dir.x, 0, dir.z).normalized + perpendicularDir.normalized) * magnetSpeed;
             }
+            if(movingObjRb.velocity.magnitude < 0.1f)
+                movingObjRb.velocity = Vector3.zero;
 
+            Debug.Log(horizontalDistance);
             //Update the system velocity
             movingObj.GetComponent<Rigidbody>().velocity += playerMovement.rb.velocity;
         }
@@ -231,6 +259,6 @@ public class BoTW : MonoBehaviour
         AnimationUpdater();
         BotwMechanics();
         MagnetMovement();
-        
     }
+
 }
