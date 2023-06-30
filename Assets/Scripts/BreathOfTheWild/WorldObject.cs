@@ -4,18 +4,19 @@ using UnityEngine;
 
 public class WorldObject : MonoBehaviour
 {
+    [Header("References")]
+    public Material yellowMat;
+
+    public GameObject BrokenPrefab;
+    private MeshRenderer mesh;
+    private Material normalMat;
+    private BoTW boTW;
+
+    [Header("Settings")]
     public float damageToBreak;
     public float currentDamage;
 
     public bool isMetal;
-    
-    private MeshRenderer mesh;
-    private Material normalMat;
-    public Material yellowMat;
-
-    public GameObject BrokenPrefab;
-
-    private BoTW boTW;
     void Start()
     {
         mesh = GetComponent<MeshRenderer>();
