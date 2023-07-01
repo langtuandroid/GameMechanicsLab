@@ -10,7 +10,7 @@ public class Bomb : MonoBehaviour
     public Mesh SphereBomb, SquareBomb;
     public MeshFilter Mesh;
     
-    public Transform BombPos;
+    public Transform BombDynPos, BombStaticPos;
     private Rigidbody rb;
     private PlayerMovement playerMovement;
     private BoxCollider boxCollider;
@@ -30,7 +30,7 @@ public class Bomb : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(transform.parent != BombPos)
+        if(transform.parent != BombDynPos)
             boTW.anim.SetBool("isHoldingBomb", false);
     }
     private void Start()
@@ -75,6 +75,11 @@ public class Bomb : MonoBehaviour
     }
     public void Spawn(bool sphere)
     {
+        //Avoid the player from run and jump
+        playerMovement.canRun = false;
+        playerMovement.canJump = false;
+        
+
         // Set the mesh based on the bomb type.
         if (sphere)
             Mesh.mesh = SphereBomb;
@@ -82,14 +87,12 @@ public class Bomb : MonoBehaviour
             Mesh.mesh = SquareBomb;
         // Activate the bomb and position it above the player.
         gameObject.SetActive(true);
-        transform.parent = BombPos;
-        transform.position = BombPos.position;
+        transform.parent = BombDynPos;
+        transform.position = BombDynPos.position;
         transform.eulerAngles = Vector3.zero;
         currentState = 1;
 
-        //Avoid the player from run and jump
-        playerMovement.canRun = false;
-        playerMovement.canJump = false;
+
     }
 
     public void Throw()
@@ -101,11 +104,13 @@ public class Bomb : MonoBehaviour
         playerMovement.canRun = true;
         playerMovement.canJump = true;
 
+        transform.parent = null;
+
+        transform.position = BombStaticPos.position;
+
         transform.eulerAngles = Vector3.zero;
         rb.constraints = RigidbodyConstraints.None;
         rb.AddForce((Player.transform.forward  * throwForce) + (Player.transform.up * throwHeight), ForceMode.Impulse);
-
-        transform.parent = null;
 
         if(Mesh.mesh == SphereBomb)
             sphereCollider.enabled = true;
