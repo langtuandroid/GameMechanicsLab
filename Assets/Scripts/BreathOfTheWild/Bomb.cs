@@ -16,7 +16,7 @@ public class Bomb : MonoBehaviour
     private BoxCollider boxCollider;
     private SphereCollider sphereCollider;
     private MeshRenderer meshRenderer;
-    
+    private BoTW boTW;
     public int currentState = 0;
     public float throwForce = 10;
     public float throwHeight = 3;
@@ -30,7 +30,8 @@ public class Bomb : MonoBehaviour
 
     private void FixedUpdate()
     {
-        currentVel = minVel + (playerMovement.currentSpeed * (maxVel - minVel)) / (playerMovement.runSpeed);
+        if(transform.parent != BombPos)
+            boTW.anim.SetBool("isHoldingBomb", false);
     }
     private void Start()
     {
@@ -41,40 +42,22 @@ public class Bomb : MonoBehaviour
         physicMaterial.dynamicFriction = friction;
         boxCollider = GetComponent<BoxCollider>();
         sphereCollider = GetComponent<SphereCollider>();
+        boTW = Player.GetComponent<BoTW>();
     }
-    public void Spawn(bool sphere)
+
+    public void HideBomb()
     {
-        // Set the mesh and collider based on the bomb type.
-        if (sphere)
-        {
-            Mesh.mesh = SphereBomb;
-            sphereCollider.enabled = false;
-            boxCollider.enabled = false;
-        }
-        else
-        {
-            Mesh.mesh = SquareBomb;
-            sphereCollider.enabled = false;
-            boxCollider.enabled = true;
-        }
-
-        // Activate the bomb and position it above the player.
-        gameObject.SetActive(true);
-        transform.parent = BombPos;
-        transform.position = BombPos.position;
-        transform.eulerAngles = Vector3.zero;
-        currentState = 1;
+        isExploding = false;
+        explosionZone.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        gameObject.SetActive(false);
+        meshRenderer.enabled = true;
+        sphereCollider.enabled = false;
+        boxCollider.enabled = false;
+        rb.constraints = RigidbodyConstraints.FreezeAll;
+        currentState = 0;
     }
 
-    public void Throw()
-    {
-        sphereCollider.enabled = true;
-        transform.parent = null;
-        rb.constraints = RigidbodyConstraints.None;
-        rb.AddForce(((Player.transform.forward  * throwForce) + (Player.transform.up * throwHeight)) * currentVel, ForceMode.Impulse);
-        currentState = 2;
-    }
-
+    
     public void Update()
     {
         if(isExploding)
@@ -85,16 +68,49 @@ public class Bomb : MonoBehaviour
             //If the explosion zone is close enough to the explosion radius, hide the bomb.
             if (explosionZone.transform.localScale.x >= explosionRadius - 0.1f)
             {
-                isExploding = false;
-                explosionZone.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-                gameObject.SetActive(false);
-                meshRenderer.enabled = true;
-                currentState = 0;
-                rb.constraints = RigidbodyConstraints.FreezeAll;
+                HideBomb();
             }
 
         }
     }
+    public void Spawn(bool sphere)
+    {
+        // Set the mesh based on the bomb type.
+        if (sphere)
+            Mesh.mesh = SphereBomb;
+        else
+            Mesh.mesh = SquareBomb;
+        // Activate the bomb and position it above the player.
+        gameObject.SetActive(true);
+        transform.parent = BombPos;
+        transform.position = BombPos.position;
+        transform.eulerAngles = Vector3.zero;
+        currentState = 1;
+
+        //Avoid the player from run and jump
+        playerMovement.canRun = false;
+        playerMovement.canJump = false;
+    }
+
+    public void Throw()
+    {
+        //Allow player to run and jump again
+        playerMovement.canRun = true;
+        playerMovement.canJump = true;
+
+        transform.parent = null;
+        rb.constraints = RigidbodyConstraints.None;
+        rb.velocity += playerMovement.GetComponent<Rigidbody>().velocity;
+        rb.AddForce((Player.transform.forward  * throwForce) + (Player.transform.up * throwHeight), ForceMode.Impulse);
+
+        if(Mesh.mesh == SphereBomb)
+            sphereCollider.enabled = true;
+        else
+            boxCollider.enabled = true;
+
+        currentState = 2;
+    }
+
 
     public void Explode()
     {

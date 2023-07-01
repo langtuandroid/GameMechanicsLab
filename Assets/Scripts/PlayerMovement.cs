@@ -19,13 +19,14 @@ public class PlayerMovement : MonoBehaviour
     public float runSpeed;
     public bool isRagdoll = false;
     public bool canRotate = true;
+    public bool canRun = true;
     private float turnSmoothTime = 0.1f;
     private float rotationSpeed;
 
     [Header("Jump")]
     public float jumpHeight;
     public float jumpDelay;
-
+    public bool canJump = true;
 
     [Header("World")]
     public CurrentWorld World;
@@ -52,7 +53,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         
         // If the player is holding shift, set their speed to runSpeed, otherwise set it to moveSpeed.
-        if(Input.GetKey(KeyCode.LeftShift))
+        if(Input.GetKey(KeyCode.LeftShift) && canRun)
         {
             currentSpeed = Mathf.Clamp(currentSpeed, 0, runSpeed);
             anim.SetBool("isRunning", true);
@@ -113,7 +114,7 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         JumpDelay();
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && jumpDelay <= 0 && !isRagdoll)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && jumpDelay <= 0 && !isRagdoll && canJump)
         {
             rb.velocity = new Vector3(rb.velocity.x, jumpHeight, rb.velocity.z);
             Debug.Log(anim.runtimeAnimatorController.name);

@@ -13,7 +13,7 @@ public class BoTW : MonoBehaviour
     public Bomb bomb;
     public GameObject movingObj;
     private Rigidbody rb;
-    private Animator anim;
+    public Animator anim;
     private PlayerMovement playerMovement;
     private LineRenderer line;
 
@@ -26,7 +26,7 @@ public class BoTW : MonoBehaviour
     public float magnetSpeed = 1;
     public float magnetDistance;   
 
-    private bool isHoldingBomb = false;
+    public bool isHoldingBomb = false;
     private bool isHoldingArm = false;
     private Vector2 previousMousePosition;
     private int screenHeight, screenWidth;
@@ -48,11 +48,12 @@ public class BoTW : MonoBehaviour
     
     private void AnimationUpdater()
     {
+
         // If player is not moving, switch to idle animation
         if(rb.velocity == Vector3.zero && anim.runtimeAnimatorController != playerMovement.idle)
         {
             // If player is holding a bomb, play idle animation for holding bomb
-            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
+            if(bomb.currentState == 1)
             {
                 anim.runtimeAnimatorController = playerMovement.idle;
                 anim.SetBool("isHoldingBomb", true);
@@ -73,7 +74,7 @@ public class BoTW : MonoBehaviour
         else if((rb.velocity.x > 0.1f || rb.velocity.x < -0.1f)&& (rb.velocity.z > 0.1f || rb.velocity.z < -0.1f) && anim.runtimeAnimatorController != playerMovement.walk)
         {  
             // If player is holding a bomb, play walking animation for holding bomb
-            if(anim.GetCurrentAnimatorStateInfo(1).IsName("Bomb"))
+            if(bomb.currentState == 1)
             {
                 anim.runtimeAnimatorController = playerMovement.walk;
                 anim.SetBool("isHoldingBomb", true);
@@ -109,9 +110,12 @@ public class BoTW : MonoBehaviour
                     isHoldingBomb = true;
                     break;
                 case 1:
-                    bomb.Throw();
-                    anim.SetBool("isHoldingBomb", false);
-                    isHoldingBomb = false;
+                   if(anim.GetCurrentAnimatorStateInfo(1).normalizedTime >= 0.95f)
+                    {
+                        bomb.Throw();
+                        anim.SetBool("isHoldingBomb", false);
+                        isHoldingBomb = false;
+                    }
                     break;
                 case 2:
                     bomb.Explode();
@@ -130,15 +134,27 @@ public class BoTW : MonoBehaviour
                     isHoldingBomb = true;
                     break;
                 case 1:
-                    bomb.Throw();
-                    anim.SetBool("isHoldingBomb", false);
-                    isHoldingBomb = false;
+                    if(anim.GetCurrentAnimatorStateInfo(1).normalizedTime == 1)
+                    {
+                        bomb.Throw();
+                        anim.SetBool("isHoldingBomb", false);
+                        isHoldingBomb = false;
+                    }
                     break;
                 case 2:
                     bomb.Explode();
                     break;
             }
 
+        }
+
+        //Cancel Bomb
+
+        if(Input.GetKeyDown(KeyCode.T) && bomb.currentState == 1)
+        {
+            bomb.HideBomb();
+            anim.SetBool("isHoldingBomb", false);
+            isHoldingBomb = false;
         }
 
         //Magnet
@@ -214,6 +230,7 @@ public class BoTW : MonoBehaviour
             line.SetPosition(0, Hand.transform.position);
             line.SetPosition(1, movingObj.transform.position);
         }
+
     }
 
     private void MagnetMovement()

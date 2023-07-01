@@ -1601,10 +1601,10 @@ MonoBehaviour:
   Hand: {fileID: 393597563}
   bomb: {fileID: 91677701}
   movingObj: {fileID: 0}
-  magnetSpeed: 10
   magnetState: 0
   minDistance: 5
   maxDistance: 20
+  magnetSpeed: 10
   magnetDistance: 0
 --- !u!120 &787525964
 LineRenderer:
@@ -2813,11 +2813,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d1c2f03706941542bde4b6f5693ee94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  yellowMat: {fileID: 2100000, guid: 9c5c21ae0eab9c240984cf2985fc0541, type: 2}
+  BrokenPrefab: {fileID: 1133339979934080932, guid: b7184196637737040909fea17c7f1301, type: 3}
   damageToBreak: 5
   currentDamage: 0
   isMetal: 1
-  yellowMat: {fileID: 2100000, guid: 9c5c21ae0eab9c240984cf2985fc0541, type: 2}
-  BrokenPrefab: {fileID: 1133339979934080932, guid: b7184196637737040909fea17c7f1301, type: 3}
 --- !u!1001 &367093469846789965
 PrefabInstance:
   m_ObjectHideFlags: 0
