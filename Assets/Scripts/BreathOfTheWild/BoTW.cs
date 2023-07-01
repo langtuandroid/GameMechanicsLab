@@ -31,7 +31,7 @@ public class BoTW : MonoBehaviour
     private Vector2 previousMousePosition;
     private int screenHeight, screenWidth;
 
-    private float iDelay, kDelay;
+    private float throwDelay;
 
 
     // Start is called before the first frame update
@@ -105,16 +105,18 @@ public class BoTW : MonoBehaviour
             switch(bomb.currentState)
             {
                 case 0:
+                    throwDelay = 1;
                     bomb.Spawn(true);
                     anim.SetBool("isHoldingBomb", true);
                     isHoldingBomb = true;
                     break;
                 case 1:
-                   if(anim.GetCurrentAnimatorStateInfo(1).normalizedTime >= 0.95f)
+                    if(throwDelay <= 0)
                     {
                         bomb.Throw();
                         anim.SetBool("isHoldingBomb", false);
                         isHoldingBomb = false;
+                        throwDelay = 0;
                     }
                     break;
                 case 2:
@@ -129,16 +131,18 @@ public class BoTW : MonoBehaviour
             switch(bomb.currentState)
             {
                 case 0:
+                    throwDelay = 1;
                     bomb.Spawn(false);
                     anim.SetBool("isHoldingBomb", true);
                     isHoldingBomb = true;
                     break;
                 case 1:
-                    if(anim.GetCurrentAnimatorStateInfo(1).normalizedTime == 1)
+                    if(throwDelay <= 0)
                     {
                         bomb.Throw();
                         anim.SetBool("isHoldingBomb", false);
                         isHoldingBomb = false;
+                        throwDelay = 0;
                     }
                     break;
                 case 2:
@@ -298,6 +302,11 @@ public class BoTW : MonoBehaviour
         AnimationUpdater();
         BotwMechanics();
         MagnetMovement();
+
+        if(throwDelay > 0)
+        {
+            throwDelay -= Time.deltaTime;
+        }
     }
 
 }

@@ -94,14 +94,18 @@ public class Bomb : MonoBehaviour
 
     public void Throw()
     {
+
+        playerMovement.StopHorizontalMovement();
+
         //Allow player to run and jump again
         playerMovement.canRun = true;
         playerMovement.canJump = true;
 
-        transform.parent = null;
+        transform.eulerAngles = Vector3.zero;
         rb.constraints = RigidbodyConstraints.None;
-        rb.velocity += playerMovement.GetComponent<Rigidbody>().velocity;
         rb.AddForce((Player.transform.forward  * throwForce) + (Player.transform.up * throwHeight), ForceMode.Impulse);
+
+        transform.parent = null;
 
         if(Mesh.mesh == SphereBomb)
             sphereCollider.enabled = true;
