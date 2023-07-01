@@ -60,7 +60,7 @@ public class BoTW : MonoBehaviour
                 anim.Play("Bomb", 1, 50);
             }
             // If player is holding a bomb arm, play idle animation for holding bomb arm
-            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
+            else if(magnetState == 1)
             {
                 anim.runtimeAnimatorController = playerMovement.idle;
                 anim.SetBool("isHoldingArm", true);
@@ -81,7 +81,7 @@ public class BoTW : MonoBehaviour
                 anim.Play("Bomb", 1, 50);
             }
             // If player is holding a bomb arm, play walking animation for holding bomb arm
-            else if(anim.GetCurrentAnimatorStateInfo(1).IsName("HoldingArm"))
+            else if(magnetState == 1)
             {
                 anim.runtimeAnimatorController = playerMovement.walk;
                 anim.SetBool("isHoldingArm", true);
@@ -182,8 +182,10 @@ public class BoTW : MonoBehaviour
 
                     if (Physics.Raycast(ray, out hit))
                     {  
+                        if(!hit.collider.gameObject.GetComponent<WorldObject>())
+                            return;
                         //If the ray hits a world object, and the distance is greater than the minimum distance, prepare all the variables for move the object                             
-                        if(hit.collider.gameObject.GetComponent<WorldObject>() && Vector3.Distance(transform.position, hit.collider.transform.position) > minDistance) 
+                        if(Vector3.Distance(transform.position, hit.collider.transform.position) > minDistance && hit.collider.gameObject.GetComponent<WorldObject>().isMetal) 
                         {
                             //Disable crosshair
                             Aim.SetActive(false);

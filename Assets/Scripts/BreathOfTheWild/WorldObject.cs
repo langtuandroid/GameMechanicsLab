@@ -27,7 +27,7 @@ public class WorldObject : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(boTW.magnetState != 0)
+        if(boTW.magnetState != 0 && isMetal)
             mesh.material = yellowMat;
         else{
             mesh.material = normalMat;
